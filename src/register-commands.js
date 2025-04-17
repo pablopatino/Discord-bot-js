@@ -45,13 +45,55 @@ const commands = [
         ]
     },
     {
-        name: 'otorgar',
+        name: 'otorgar', //SOLO PUEDO DAR PUNTOS YO.
         description: 'Otorgar puntos a todos',
         options: [
             {
-                name: 'puntos',
+                name: 'puntos', 
                 description: 'Puntos a otorgarles a todos   ',
                 type: ApplicationCommandOptionType.Integer,
+                required: true,
+            },
+        ]
+    },
+    {
+        name: 'registrarse', 
+        description: 'Registrarse en la aplicacion para participar',
+        options: [
+            {
+                name: 'nombre', 
+                description: 'Pon tu nombre de simepre, ejm: Kougra, Toph, Tskk',
+                type: ApplicationCommandOptionType.String,
+                required: true,
+            },
+        ]
+    },
+    {
+        name: 'loguearse', 
+        description: 'Loguearse en la session actual.'
+    },
+    {
+        name: 'puntos', 
+        description: 'Los puntos que tienes ahora mismo'
+    },
+    {
+        name: 'puntos_globales', 
+        description: 'Lista de puntos de la URSS'
+    },
+    {
+        name: 'tradear_puntos', 
+        description: 'Darle puntos a una persona',
+        options: [
+            {
+                name: 'puntos', 
+                description: 'Pon tu nombre de simepre, ejm: Kougra, Toph, Tskk',
+                type: ApplicationCommandOptionType.Integer,
+                required: true,
+            },
+            {
+                name: 'usuario', 
+                description: 'usuario',
+                type: ApplicationCommandOptionType.User,
                 required: true,
             },
         ]
