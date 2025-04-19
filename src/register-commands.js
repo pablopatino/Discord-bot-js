@@ -11,6 +11,12 @@ const commands = [
                 description: 'Nombre del item',
                 type: ApplicationCommandOptionType.String,
                 required: true
+            },
+            {
+                name: 'core',
+                description: 'Es item para core?',
+                type: ApplicationCommandOptionType.Boolean,
+                required: true
             }
         ]
     },
@@ -35,14 +41,6 @@ const commands = [
     {
         name: 'terminar',
         description: 'Termina la subasta',
-        options: [
-            {
-                name: 'id_de_la_subata',
-                description: 'Id de la subata que vas a finalizar',
-                type: ApplicationCommandOptionType.Integer,
-                required: true,
-            },
-        ]
     },
     {
         name: 'otorgar', //SOLO PUEDO DAR PUNTOS YO.

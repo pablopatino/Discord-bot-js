@@ -16,6 +16,9 @@ client.on('ready', (c) => {
     console.log('El bot esta listoo.');
 });
 
+let idSubastaGlobal = null;
+
+
 client.on('interactionCreate', async (interaction) => {
     if(!interaction.isChatInputCommand()) return;
 
@@ -23,19 +26,39 @@ client.on('interactionCreate', async (interaction) => {
     //console.log(interaction.user.username);
 
     if(interaction.commandName === 'subasta'){
-
-
         const nombreItem = interaction.options.get('nombre_item').value;
+        const core = interaction.options.get('core').value;
 
         try {
             const response = await axios.post(`http://localhost:8080/subasta/iniciar/${nombreItem}`);
-            console.log(response);
+            
+            idSubastaGlobal = response.data.id;
+
+            const simboloCore = core ? '✅' : '❌';
 
             const embed = new EmbedBuilder()
-            .setTitle(`Nombre del Item: ${nombreItem}`)  
-            .setDescription(`Id de la subata: ${response.data.id}`);
-            //`El Id de la suba del item ${nombreItem} es : ${response.data.id}`
-            await interaction.reply({embeds: [embed]});
+            .setColor(0x0099FF)
+            .setTitle(`Nombre del Item: ${nombreItem}`)
+            .addFields(
+                { name: 'Id de la subata', value: response.data.id, inline: true },
+                { name: 'Core', value: simboloCore, inline: true },
+            )
+
+            await interaction.deferReply();
+
+            await interaction.editReply({embeds: [embed]});
+
+            const mensaje = await interaction.fetchReply();
+
+            const hilo = await mensaje.startThread({
+                name: `Subasta - ${nombreItem}`,
+                autoArchiveDuration: 60,
+                reason: 'Hilo creado para subasta'
+            });
+
+            await hilo.send(`¡Comienza la subasta para **${nombreItem}**! Aquí irán las pujas.`);
+
+
         } catch (error) {
             console.error('Error al llamar al backend:', error);
             await interaction.reply('Error al consultar el backend.');
@@ -62,11 +85,9 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if(interaction.commandName === 'terminar'){
-        const idDeLaSubasta = interaction.options.get('id_de_la_subata').value;
-
         try {
             const response = await axios.post('http://localhost:8080/subasta/terminar', {
-                idSubasta: '1',
+                idSubasta: idSubastaGlobal,
                 nombreDelItem: 'pruba'
             });
             console.log(response);
