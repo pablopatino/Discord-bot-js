@@ -7,8 +7,8 @@ const commands = [
         description: 'Replies',
         options: [
             {
-                name: 'nombre_item',
-                description: 'Nombre del item',
+                name: 'id_del_item',
+                description: 'Id del item a subastar',
                 type: ApplicationCommandOptionType.String,
                 required: true
             },
@@ -30,12 +30,6 @@ const commands = [
                 type: ApplicationCommandOptionType.Integer,
                 required: true,
             },
-            {
-                name: 'id_de_la_subata',
-                description: 'Id de la subata a la que vas a particiar',
-                type: ApplicationCommandOptionType.Integer,
-                required: true,
-            }
         ]
     },
     {
@@ -67,6 +61,18 @@ const commands = [
         ]
     },
     {
+        name: 'registrar_personajes', 
+        description: 'Registrar cada uno de tus personajes',
+        options: [
+            {
+                name: 'nombre_del_personaje', 
+                description: 'Nombre de los personajes que aparecen en raiderio',
+                type: ApplicationCommandOptionType.String,
+                required: true,
+            },
+        ]
+    },
+    {
         name: 'loguearse', 
         description: 'Loguearse en la session actual.'
     },
@@ -77,6 +83,10 @@ const commands = [
     {
         name: 'puntos_globales', 
         description: 'Lista de puntos de la URSS'
+    },
+    {
+        name: 'prueba', 
+        description: 'prueba'
     },
     {
         name: 'tradear_puntos', 
