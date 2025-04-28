@@ -63,6 +63,8 @@ client.on('interactionCreate', async (interaction) => {
                 { name: 'Tier', value: parteDelInventario, inline: true },
                 { name: 'Core', value: simboloCore, inline: true },
             )
+            .setTimestamp()
+            .setFooter({ text: 'Bot-Subasta | URSS' });
 
             await interaction.deferReply();
 
@@ -127,6 +129,7 @@ client.on('interactionCreate', async (interaction) => {
             )
             .setFooter({ text: '¡Apuesten mientras puedan!', iconURL: 'https://cdn-icons-png.flaticon.com/512/2838/2838912.png' })
             .setTimestamp();
+            
 
             await interaction.reply({embeds: [embed] });
 
@@ -144,7 +147,9 @@ client.on('interactionCreate', async (interaction) => {
                         .addFields(
                             { name: '👑 Ganador', value: `<@${res.data.nombreUsuario}>`, inline: true },
                             { name: '💰 Puja Ganadora', value: `${res.data.puntosUsados} 🪙`, inline: true }
-                        );
+                        )
+                        .setTimestamp()
+                        .setFooter({ text: 'Bot-Subasta | URSS' });
 
                     console.log('Que es el hilo? ' + threadId);
             
@@ -410,9 +415,37 @@ client.on('interactionCreate', async (interaction) => {
             .setLabel('❌ Rechazar')
             .setStyle(ButtonStyle.Danger),
         );
+        
+
+        if (interaction.user.id === recipient.id) {
+            const embed = new EmbedBuilder()
+                .setTitle(`❌ No puedes enviarte puntos a ti mismo ❌`);
+        
+            await interaction.reply({
+                embeds: [embed],
+                ephemeral: true  // (flags: 64 es lo mismo, pero así es más claro)
+            });
+        
+            return; // 🔥 Esto corta toda la función y no intenta hacer el .send
+        }
+
+        const embedError = await validarRegaloDePuntso(interaction.user.id,recipient.id,puntos);
+
+        if(embedError){
+                const embed = new EmbedBuilder()
+                .setTitle('❌ No puedes enviar puntos ❌')
+                .setDescription(embedError)
+                .setColor('Red');
+
+            await interaction.reply({
+                embeds: [embed],
+                ephemeral: true
+            });
+            return; // ❌ No sigas
+        }
 
         const dm = await recipient.send({
-        content: `🎁 ¡Te están ofreciendo un trade de ${puntos} puntos de parte de <@${interaction.user.id}>!`,
+        content: `🎁 <@${interaction.user.id}>! ¡Te quiere regalar ${puntos} puntos`,
         components: [row],
         });
 
@@ -422,10 +455,29 @@ client.on('interactionCreate', async (interaction) => {
         if (i.customId === 'accept_trade') {
             console.log('ACEPTO EL MARACAS')
             await i.reply({ content: '✅ Has aceptado el trade.', flags: 64 });
+            await axios.post(`http://localhost:8080/usuarios/puntos/enviar/${interaction.user.id}/${recipient.id}/${puntos}`);
+
+            const embed = new EmbedBuilder()
+            .setColor('#00FF00')
+            .setTitle('✅ ¡Aceptado!')
+            .setDescription(`<@${userId}> Te han aceptado el regalo.`)
+            .setTimestamp()
+            .setFooter({ text: 'Bot-Subasta | URSS' });
+
+            enviarMensajeAlUsuario(interaction.user.id,embed);
+
             collector.stop();
         } else if (i.customId === 'reject_trade') {
-            console.log('CENCELO EL MARACAS')
             await i.reply({ content: '❌ Has rechazado el trade.', flags: 64 });
+
+            const embed = new EmbedBuilder()
+            .setColor('#b32428')
+            .setTitle('❌ ¡Rechazado!')
+            .setDescription(`<@${userId}> a rechazado tu regalo.`)
+            .setTimestamp()
+            .setFooter({ text: 'Bot-Subasta | URSS' });
+
+            enviarMensajeAlUsuario(interaction.user.id,embed);
             collector.stop();
         }
         });
@@ -436,7 +488,7 @@ client.on('interactionCreate', async (interaction) => {
         }
         });
 
-        interaction.reply('El tradeo se envio');
+        interaction.reply({ content: 'El regalo se envio de manera correcta.', flags: 64 });
     }
 });
 
@@ -645,6 +697,36 @@ async function enviarPuntosUsuario(userId, puntos) {
         console.log(`✅ Mensaje enviado a ${usuario.tag}`);
     } catch (error) {
         console.error('❌ Error al enviar el mensaje:', error);
+    }
+}
+
+async function enviarMensajeAlUsuario(userId, embed) {
+    try {
+        const usuario = await client.users.fetch(userId);
+        if (!usuario) {
+            console.error('❌ No se pudo encontrar el usuario con ID:', userId);
+            return;
+        }
+        await usuario.send({ embeds: [embed] });
+
+        console.log(`✅ Mensaje enviado a ${usuario.tag}`);
+    } catch (error) {
+        console.error('❌ Error al enviar el mensaje:', error);
+    }
+}
+
+async function validarRegaloDePuntso(userId,recipentId,puntos){
+    try {
+        await axios.post(`http://localhost:8080/usuarios/puntos/enviar/validar/${userId}/${recipentId}/${puntos}`);
+        return null;
+        
+    } catch (error) {
+        
+        console.log(error);
+
+        const errorMessage = error.response?.data || "Ha ocurrido un error desconocido.";
+
+        return errorMessage;
     }
 }
 
